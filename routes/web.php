@@ -9,25 +9,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Default dashboard (for all authenticated users)
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'verified', 'verified'])->group(function () {
-    // User dashboard (default) Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+// Admin dashboard (only for admins)
+Route::middleware(['auth', 'verified', 'role.admin'])->group(function () {
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])
+        ->name('admin.dashboard');
+});
 
-// Admin dashboard
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])
-    ->middleware('role:admin')
-    ->name('admin.dashboard');
+// Teacher timetable (only for teachers)
+Route::middleware(['auth', 'verified', 'role.teacher'])->group(function () {
+    Route::get('/teacher/timetable', [TimetableController::class, 'index'])
+        ->name('teacher.timetable');
+});
 
-// Teacher timetable
-Route::get('/teacher/timetable', [TimetableController::class, 'index'])
-    ->middleware('role:teacher')
-    ->name('teacher.timetable');
-
+// Profile routes (for all authenticated users)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
